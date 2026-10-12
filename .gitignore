@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# R
+.Rhistory
+.RData
+.Rproj.user
+*.Rproj
+
+# R CMD check
+*.Rcheck/
+
+# devtools / build
+*.tar.gz
+*.zip
