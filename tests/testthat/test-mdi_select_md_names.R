@@ -45,7 +45,8 @@ test_that("without filtered harmonization the concordance is left as is", {
 
 test_that("selected variables missing from MD_varnames are reported and ignored", {
   cfg <- make_select_cfg(filtered = TRUE)
-  expect_message(out <- mdi_select_md_names(cfg, sel(c("sales", "not_a_var"))), "not in MD_varnames")
+  expect_message(out <- mdi_select_md_names(cfg, sel(c("sales", "not_a_var"))),
+                 "not in MD_varnames and will be ignored: SBS\\.not_a_var")
   expect_false("not_a_var" %in% out$nsi$NSI_MD_conc$MD_varname)
   expect_true("sales" %in% out$nsi$NSI_MD_conc$MD_varname)
 })

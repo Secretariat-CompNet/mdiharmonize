@@ -4,7 +4,12 @@
 \alias{mdi_post_harmonization_checks}
 \title{Write the post-harmonization quality report}
 \usage{
-mdi_post_harmonization_checks(cfg, threshold = 0.25, na_threshold = 0.1)
+mdi_post_harmonization_checks(
+  cfg,
+  threshold = 0.25,
+  na_threshold = 0.1,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{cfg}{config list from \code{\link[=mdi_config]{mdi_config()}}, with the MD metadata
@@ -15,6 +20,8 @@ a break (see \code{\link[=mdi_check_harmonized]{mdi_check_harmonized()}}).}
 
 \item{na_threshold}{numeric(1), the year-on-year change in the share of
 \code{NA} values flagged (see \code{\link[=mdi_check_harmonized]{mdi_check_harmonized()}}).}
+
+\item{verbose}{logical(1), report where the results are with a message.}
 }
 \value{
 The per-dataset results of \code{\link[=mdi_check_harmonized]{mdi_check_harmonized()}}, invisibly.

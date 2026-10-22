@@ -26,6 +26,7 @@
 #'   a break (see [mdi_check_harmonized()]).
 #' @param na_threshold numeric(1), the year-on-year change in the share of
 #'   `NA` values flagged (see [mdi_check_harmonized()]).
+#' @param verbose logical(1), report where the results are with a message.
 #'
 #' @return The per-dataset results of [mdi_check_harmonized()], invisibly.
 #' @examples
@@ -46,8 +47,9 @@
 #' res$SBS$duplicates
 #' readLines(paste0(tmpsave, "FI_phc_results.txt"))[1:8]
 #' @export
-mdi_post_harmonization_checks <- function(cfg, threshold = 0.25, na_threshold = 0.1) {
+mdi_post_harmonization_checks <- function(cfg, threshold = 0.25, na_threshold = 0.1, verbose = FALSE) {
   check_cfg(cfg, need = c("md", "nsi"))
+  if (!isTRUE(verbose) && !isFALSE(verbose)) stop("'verbose' must be TRUE or FALSE.")
   tmpsave <- cfg$dirs$tmpsave
   results_file <- paste0(cfg$country, "_phc_results.txt")
   breaks_pdf <- paste0(tmpsave, "breaks_report.pdf")
@@ -173,12 +175,11 @@ mdi_post_harmonization_checks <- function(cfg, threshold = 0.25, na_threshold = 
     log_phc("No variable's share of NA values jumps, and none is NA in every row of a year.\n")
   }
 
-  message("\nPOST-HARMONIZATION CHECK COMPLETE\n",
+  if (verbose) message("\nPOST-HARMONIZATION CHECK COMPLETE\n",
           sprintf("Results saved in:\n- %s\n- %s\n", paste0(tmpsave, results_file), breaks_pdf),
           "Please review:\n",
           "1. TXT file  \u2192 Duplicates, class & date format issues, and date ranges\n",
-          "2. PDF file  \u2192 Plots of the variables with a break or a jump in their share of NAs\n",
-          "Resolve any flagged issues before proceeding by setting MDImoduleRUN = TRUE.")
+          "2. PDF file  \u2192 Plots of the variables with a break or a jump in their share of NAs")
   invisible(phc)
 }
 

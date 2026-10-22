@@ -17,6 +17,15 @@ test_that("mdi_harmonize revalues, remaps and sets year from the concordance", {
   expect_equal(res$year, c(2020L, 2020L))
 })
 
+test_that("mdi_harmonize reports its steps only with verbose = TRUE", {
+  conc <- make_harmonize_conc(c("EMP", "emp", "remap", NA))
+  expect_silent(mdi_harmonize(data.table::data.table(EMP = 1), conc, "FI"))
+  expect_message(mdi_harmonize(data.table::data.table(EMP = 1), conc, "FI", verbose = TRUE),
+                 "Step 5: remap")
+  expect_error(mdi_harmonize(data.table::data.table(EMP = 1), conc, "FI", verbose = NA),
+               "'verbose' must be TRUE or FALSE")
+})
+
 test_that("mdi_harmonize recodes with a country codeconc, filtered to the variable and dataset", {
   dt <- data.table::data.table(LFO = c("1", "2", "9"))
   conc <- make_harmonize_conc(c("LFO", "lfo", "recode", "FI_MD_codeconc"),

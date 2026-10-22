@@ -4,7 +4,7 @@
 \alias{mdi_harmonize_pipeline}
 \title{Harmonize a country's NSI data into the MD datasets}
 \usage{
-mdi_harmonize_pipeline(cfg, oracle_channel = NULL)
+mdi_harmonize_pipeline(cfg, oracle_channel = NULL, verbose = FALSE)
 }
 \arguments{
 \item{cfg}{config list from \code{\link[=mdi_config]{mdi_config()}}, with the MD metadata
@@ -12,6 +12,8 @@ mdi_harmonize_pipeline(cfg, oracle_channel = NULL)
 
 \item{oracle_channel}{an open RODBC connection to use instead of asking for
 the password; the caller closes it.}
+
+\item{verbose}{logical(1), report progress with messages.}
 }
 \value{
 \code{cfg}, with \code{nsi} (the selected NSI metadata), \code{conctype} (the

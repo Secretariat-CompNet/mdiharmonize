@@ -32,15 +32,16 @@
 #'   (`cfg$md`) loaded.
 #' @param oracle_channel an open RODBC connection to use instead of asking for
 #'   the password; the caller closes it.
+#' @param verbose logical(1), report progress with messages.
 #'
 #' @return `cfg`, with `nsi` (the selected NSI metadata), `conctype` (the
 #'   processing order) and `deflators` added.
 #' @keywords internal
-mdi_harmonize_pipeline <- function(cfg, oracle_channel = NULL) {
+mdi_harmonize_pipeline <- function(cfg, oracle_channel = NULL, verbose = FALSE) {
   check_cfg(cfg, need = "md")
 
   cfg$nsi <- mdi_load_nsi_metadata(cfg$dirs$nsimeta, cfg$dirs$mdmeta, cfg$country)
-  message("All NSI Metadata files have been imported successfully")
+  if (verbose) message("All NSI Metadata files have been imported successfully")
   selected <- if (isTRUE(cfg$flags$filtered_harmonization)) mdi_load_module_selection(cfg$dirs$progs, cfg$modules)
   cfg <- mdi_select_md_names(cfg, selected)
 
@@ -62,8 +63,8 @@ mdi_harmonize_pipeline <- function(cfg, oracle_channel = NULL) {
       oracle_channel <- .oracle_connect(cfg)
       on.exit(.oracle_close(oracle_channel), add = TRUE)
     }
-    mdi_read_firmdata(run, run_conctype, oracle_channel)
-    mdi_harmonize_class_vars(run)
+    mdi_read_firmdata(run, run_conctype, oracle_channel, verbose = verbose)
+    mdi_harmonize_class_vars(run, verbose = verbose)
     # K_pim is SBS's, from BR's industries
     if (is.null(cfg$datasets) || any(c("SBS", "BR") %in% cfg$datasets)) mdi_add_pim_capital(cfg)
   } else {
@@ -100,11 +101,14 @@ mdi_harmonize_pipeline <- function(cfg, oracle_channel = NULL) {
 #' @param cfg config list from [mdi_config()], with the MD metadata
 #'   (`cfg$md`) loaded.
 #' @param oracle_channel passed on to [mdi_harmonize_pipeline()].
+#' @param verbose logical(1), report the run's progress with messages,
+#'   including where the post-harmonization report is and what to do next.
 #'
 #' @return `cfg`, as [mdi_harmonize_pipeline()] returns it, invisibly.
 #' @export
-mdi_run <- function(cfg, oracle_channel = NULL) {
+mdi_run <- function(cfg, oracle_channel = NULL, verbose = TRUE) {
   check_cfg(cfg)
+  if (!isTRUE(verbose) && !isFALSE(verbose)) stop("'verbose' must be TRUE or FALSE.")
   write(
     paste0(
       "This file documents the content of every output file.\nMDI launch version= ",
@@ -117,10 +121,13 @@ mdi_run <- function(cfg, oracle_channel = NULL) {
     file = paste0(cfg$dirs$output, "OutputDescription.csv"), sep = "\n"
   )
 
-  cfg <- mdi_harmonize_pipeline(cfg, oracle_channel)
+  cfg <- mdi_harmonize_pipeline(cfg, oracle_channel, verbose = verbose)
 
   # the review gate: the modules run once someone has looked at the report
-  if (!isTRUE(cfg$flags$module_run) && isTRUE(cfg$flags$phc_run)) mdi_post_harmonization_checks(cfg)
+  if (!isTRUE(cfg$flags$module_run) && isTRUE(cfg$flags$phc_run)) {
+    mdi_post_harmonization_checks(cfg, verbose = verbose)
+    if (verbose) message("Resolve any flagged issues before proceeding by setting MDImoduleRUN = TRUE.")
+  }
 
   log_warnings("This file documents warnings and additional information.\n--------------\n",
                cfg$dirs$output, append = FALSE)

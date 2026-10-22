@@ -30,10 +30,11 @@
 #'   `MD_dataset`, `openNSI`, `closeNSI` ([mdi_conc_order()]).
 #' @param oracle_channel an open RODBC connection, for NSI files with
 #'   `format == "oracle"`.
+#' @param verbose logical(1), report progress with messages.
 #'
 #' @return The conversion log, invisibly.
 #' @keywords internal
-mdi_read_firmdata <- function(cfg, conctype, oracle_channel = NULL) {
+mdi_read_firmdata <- function(cfg, conctype, oracle_channel = NULL, verbose = FALSE) {
   check_cfg(cfg, need = c("md", "nsi"))
   check_dt(conctype, c("NSI_dataset", "MD_dataset", "openNSI", "closeNSI"), "conctype")
 
@@ -46,7 +47,7 @@ mdi_read_firmdata <- function(cfg, conctype, oracle_channel = NULL) {
   fallout <- list()
 
   for (md in proc_order) {
-    message("Starting harmonization of ", md)
+    if (verbose) message("Starting harmonization of ", md)
     # the selection outside [ ]: conctype has a column named conctype
     in_md <- conctype[["MD_dataset"]] == md
     md_rows <- conctype[in_md]
@@ -80,8 +81,9 @@ mdi_read_firmdata <- function(cfg, conctype, oracle_channel = NULL) {
                call. = FALSE)
         }
         harmonized[[i]] <- mdi_harmonize(loaded[[datafile]][, vars, with = FALSE], conc_file, cfg$country,
-                                         code_tables = code_tables, year_var = year_var)
-        message("===> Datafile ", datafile, " harmonized!")
+                                         code_tables = code_tables, year_var = year_var,
+                                         verbose = verbose)
+        if (verbose) message("===> Datafile ", datafile, " harmonized!")
       }
       # drop or trim the raw files before stacking, and the pieces right after:
       # raw files, pieces and stacked table all in memory at once raise the
@@ -115,12 +117,12 @@ mdi_read_firmdata <- function(cfg, conctype, oracle_channel = NULL) {
     md_vars <- cfg$md$MD_varnames[unique(conc[, c("MD_dataset", "MD_varname")]),
                                   on = c("MD_dataset", "MD_varname"), nomatch = 0]
     md_vars <- unique(md_vars[md_vars[["MD_dataset"]] == md, c("MD_varname", "class", "domain")])
-    message("Converting variables to MD_varnames types")
+    if (verbose) message("Converting variables to MD_varnames types")
     coerced <- mdi_coerce_md_types(dt, md, md_vars, verbose = isTRUE(cfg$flags$debug))
     fallout[[md]] <- coerced$log
 
     saveRDS(coerced$data, file = paste0(cfg$dirs$tmpsave, md, ".RDS"))
-    message("======> MD_dataset ", md, " fully harmonized! <======")
+    if (verbose) message("======> MD_dataset ", md, " fully harmonized! <======")
     rm(dt, coerced)
   }
 

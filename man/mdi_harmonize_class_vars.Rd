@@ -4,11 +4,13 @@
 \alias{mdi_harmonize_class_vars}
 \title{Harmonize classification codes that change over time}
 \usage{
-mdi_harmonize_class_vars(cfg)
+mdi_harmonize_class_vars(cfg, verbose = FALSE)
 }
 \arguments{
 \item{cfg}{config list from \code{\link[=mdi_config]{mdi_config()}}, with the MD metadata
 (\code{cfg$md}) and the selected NSI metadata (\code{cfg$nsi}) loaded.}
+
+\item{verbose}{logical(1), report progress with messages.}
 }
 \value{
 \code{NULL}, invisibly; the datasets are rewritten in place.

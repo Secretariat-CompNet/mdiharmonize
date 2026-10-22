@@ -18,7 +18,7 @@ mock_pipeline_steps <- function(env = parent.frame(), formats = "csv") {
     mdi_select_md_names = function(cfg, selected) cfg,
     mdi_classify_conc = function(...) data.table::data.table(),
     mdi_conc_order = function(x) x,
-    mdi_read_firmdata = function(cfg, conctype, oracle_channel) {
+    mdi_read_firmdata = function(cfg, conctype, oracle_channel, verbose) {
       calls$steps <- c(calls$steps, "read")
       calls$channel <- oracle_channel
     },
@@ -132,13 +132,17 @@ test_that("mdi_run writes the output description and runs the checks only before
   checked <- new.env()
   checked$n <- 0
   testthat::local_mocked_bindings(
-    mdi_harmonize_pipeline = function(cfg, oracle_channel) cfg,
-    mdi_post_harmonization_checks = function(cfg) checked$n <- checked$n + 1
+    mdi_harmonize_pipeline = function(cfg, oracle_channel, verbose) cfg,
+    mdi_post_harmonization_checks = function(cfg, verbose) {
+      checked$n <- checked$n + 1
+      checked$verbose <- verbose
+    }
   )
   cfg <- list(dirs = list(output = out), country = "FI", launch_version = "v2.4",
               rocket_version = list(commit_hash = "abc"), payload_version = list(commit_hash = "def"),
               flags = list(module_run = FALSE, phc_run = TRUE))
-  mdi_run(cfg)
+  expect_message(mdi_run(cfg), "MDImoduleRUN = TRUE")
+  expect_true(checked$verbose)
   header <- readLines(paste0(out, "OutputDescription.csv"))
   expect_true(any(grepl("MDI launch version= v2.4", header)))
   expect_true(any(grepl("rocket version = abc", header)))

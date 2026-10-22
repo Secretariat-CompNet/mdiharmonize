@@ -24,6 +24,7 @@
 #'   name: the NSI and MD metadata, e.g. `c(cfg$nsi, cfg$md)`.
 #' @param year_var character(1), the file's year variable, or `NA`/`""` if it
 #'   has none.
+#' @param verbose logical(1), report progress with messages.
 #'
 #' @return `DT`, harmonized.
 #' @examples
@@ -37,7 +38,8 @@
 #' )
 #' mdi_harmonize(raw, conc, "FI")
 #' @export
-mdi_harmonize <- function(DT, concordance, country, code_tables = list(), year_var = NA_character_) {
+mdi_harmonize <- function(DT, concordance, country, code_tables = list(), year_var = NA_character_,
+                          verbose = FALSE) {
   check_dt(DT)
   check_dt(concordance, c("NSI_dataset", "NSI_varname", "MD_varname", "method", "detail", "year"),
            "concordance")
@@ -45,6 +47,7 @@ mdi_harmonize <- function(DT, concordance, country, code_tables = list(), year_v
   if (!is.list(code_tables)) stop("'code_tables' must be a named list of data.tables.")
   if (!(length(year_var) == 1L && (is.na(year_var) || is.character(year_var))))
     stop("'year_var' must be a single variable name, or NA.")
+  if (!isTRUE(verbose) && !isFALSE(verbose)) stop("'verbose' must be TRUE or FALSE.")
 
   missing <- setdiff(concordance[["NSI_varname"]], names(DT))
   if (length(missing)) {
@@ -60,7 +63,7 @@ mdi_harmonize <- function(DT, concordance, country, code_tables = list(), year_v
   ####### revalue #######
   ########################
   if (any(methods == "revalue")) {
-    message("Step 1: revalue")
+    if (verbose) message("Step 1: revalue")
     conc1 <- concordance[methods == "revalue"]
     for (i in seq_len(nrow(conc1))) {
       varname <- conc1[["NSI_varname"]][i]
@@ -69,14 +72,14 @@ mdi_harmonize <- function(DT, concordance, country, code_tables = list(), year_v
       mdi_check_safe_expr(expr_str)
       DT[, (varname) := eval(parse(text = expr_str))]
     }
-    message("Revalue done")
+    if (verbose) message("Revalue done")
   }
 
   ########################
   ### recode / reclass ###
   ########################
   if (any(methods %in% c("recode", "reclass"))) {
-    message("Step 2/3: recode/reclass")
+    if (verbose) message("Step 2/3: recode/reclass")
     conc2 <- concordance[methods %in% c("recode", "reclass")]
     # recode rows whose table has no codes for them: their values stay as
     # they are, which the run should say rather than pass on silently
@@ -116,14 +119,14 @@ mdi_harmonize <- function(DT, concordance, country, code_tables = list(), year_v
       warning("mdi_harmonize(): no codes in the code table for ", paste(no_codes, collapse = "; "),
               ". Their values were kept as they are, not recoded.", call. = FALSE)
     }
-    message("Reclass/code done")
+    if (verbose) message("Reclass/code done")
   }
 
   ########################
   ####### redefine #######
   ########################
   if (any(methods == "redefine")) {
-    message("Step 4: redefine")
+    if (verbose) message("Step 4: redefine")
     conc4 <- concordance[methods == "redefine"]
 
     # new variables get a temporary prefix until all are built, so one can't
@@ -163,13 +166,13 @@ mdi_harmonize <- function(DT, concordance, country, code_tables = list(), year_v
     }
 
     setnames(DT, old = names(DT), new = gsub(tmp_var_prefix, "", names(DT)))
-    message("Redefine done")
+    if (verbose) message("Redefine done")
   }
 
   ########################
   ######## remap #########
   ########################
-  message("Step 5: remap")
+  if (verbose) message("Step 5: remap")
   conc5 <- concordance[methods == "remap"]
   setnames(DT, old = conc5[["NSI_varname"]], new = conc5[["MD_varname"]])
 
@@ -179,7 +182,7 @@ mdi_harmonize <- function(DT, concordance, country, code_tables = list(), year_v
   has_year_var <- .is_set(year_var)
   if (has_year_var && year_var %in% names(DT) && !(year_var %in% keep)) keep <- c(year_var, keep)
   DT <- DT[, keep, with = FALSE]
-  message("Remap done")
+  if (verbose) message("Remap done")
 
   # set(): DT$year <- would copy the whole table once more
   if (!has_year_var) {

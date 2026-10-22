@@ -47,8 +47,8 @@ mdi_select_md_names <- function(cfg, selected = NULL) {
 
     missing <- selected[!md_varnames, on = keys]
     if (nrow(missing) > 0) {
-      message("The following variables are not in MD_varnames and will be ignored:\n",
-              paste(utils::capture.output(print(missing)), collapse = "\n"))
+      message("The following variables are not in MD_varnames and will be ignored: ",
+              paste(missing$MD_dataset, missing$MD_varname, sep = ".", collapse = ", "))
       selected <- selected[md_varnames, on = keys, nomatch = 0]
     }
 

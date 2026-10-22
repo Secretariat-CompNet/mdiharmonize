@@ -4,13 +4,16 @@
 \alias{mdi_run}
 \title{Run MDI up to the modules}
 \usage{
-mdi_run(cfg, oracle_channel = NULL)
+mdi_run(cfg, oracle_channel = NULL, verbose = TRUE)
 }
 \arguments{
 \item{cfg}{config list from \code{\link[=mdi_config]{mdi_config()}}, with the MD metadata
 (\code{cfg$md}) loaded.}
 
 \item{oracle_channel}{passed on to \code{\link[=mdi_harmonize_pipeline]{mdi_harmonize_pipeline()}}.}
+
+\item{verbose}{logical(1), report the run's progress with messages,
+including where the post-harmonization report is and what to do next.}
 }
 \value{
 \code{cfg}, as \code{\link[=mdi_harmonize_pipeline]{mdi_harmonize_pipeline()}} returns it, invisibly.

@@ -4,7 +4,7 @@
 \alias{mdi_read_firmdata}
 \title{Read and harmonize a country's NSI data into MD datasets}
 \usage{
-mdi_read_firmdata(cfg, conctype, oracle_channel = NULL)
+mdi_read_firmdata(cfg, conctype, oracle_channel = NULL, verbose = FALSE)
 }
 \arguments{
 \item{cfg}{config list from \code{\link[=mdi_config]{mdi_config()}}, with the MD metadata
@@ -16,6 +16,8 @@ mdi_read_firmdata(cfg, conctype, oracle_channel = NULL)
 
 \item{oracle_channel}{an open RODBC connection, for NSI files with
 \code{format == "oracle"}.}
+
+\item{verbose}{logical(1), report progress with messages.}
 }
 \value{
 The conversion log, invisibly.

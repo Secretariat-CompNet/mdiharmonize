@@ -9,7 +9,8 @@ mdi_harmonize(
   concordance,
   country,
   code_tables = list(),
-  year_var = NA_character_
+  year_var = NA_character_,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -27,6 +28,8 @@ name: the NSI and MD metadata, e.g. \code{c(cfg$nsi, cfg$md)}.}
 
 \item{year_var}{character(1), the file's year variable, or \code{NA}/\code{""} if it
 has none.}
+
+\item{verbose}{logical(1), report progress with messages.}
 }
 \value{
 \code{DT}, harmonized.

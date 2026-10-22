@@ -16,10 +16,11 @@
 #'
 #' @param cfg config list from [mdi_config()], with the MD metadata
 #'   (`cfg$md`) and the selected NSI metadata (`cfg$nsi`) loaded.
+#' @param verbose logical(1), report progress with messages.
 #'
 #' @return `NULL`, invisibly; the datasets are rewritten in place.
 #' @keywords internal
-mdi_harmonize_class_vars <- function(cfg) {
+mdi_harmonize_class_vars <- function(cfg, verbose = FALSE) {
   check_cfg(cfg, need = c("md", "nsi"))
   tmpsave <- cfg$dirs$tmpsave
   country_dir <- paste0(cfg$dirs$mdmeta, cfg$country, "/")
@@ -27,35 +28,35 @@ mdi_harmonize_class_vars <- function(cfg) {
 
   if (!file.exists(paste0(country_dir, cfg$country, "_nace_MD_MDnace_classconc.csv")) &&
       "BR" %in% conc_datasets) {
-    message("Running mdi_concord_nace.")
+    if (verbose) message("Running mdi_concord_nace.")
     id_info <- cfg$md$MD_idInfo
     br <- readRDS(paste0(tmpsave, "BR.RDS"))
     br <- mdi_concord_nace(br, id_info[[cfg$country]][which(id_info$MD_dataset == "BR")],
                            weight_emp = FALSE, cumsh_del = 0.95, sh_del = 0.02)
     saveRDS(br, file = paste0(tmpsave, "BR.RDS"))
-    message("=> mdi_concord_nace complete.")
+    if (verbose) message("=> mdi_concord_nace complete.")
   }
 
   if (!file.exists(paste0(country_dir, cfg$country, "_NSI_cn08_MD_cn08_classconc.csv")) &&
       "ITGS" %in% conc_datasets) {
-    message("Running class harmonization for ITGS.")
-    .harmonize_class(cfg, "cn08", "ITGS")
+    if (verbose) message("Running class harmonization for ITGS.")
+    .harmonize_class(cfg, "cn08", "ITGS", verbose)
   }
   if (!file.exists(paste0(country_dir, cfg$country, "_NSI_pcc8_MD_pcc8_classconc.csv")) &&
       "PRODCOM" %in% conc_datasets) {
-    message("Running class harmonization for PRODCOM.")
-    .harmonize_class(cfg, "pcc8", "PRODCOM")
+    if (verbose) message("Running class harmonization for PRODCOM.")
+    .harmonize_class(cfg, "pcc8", "PRODCOM", verbose)
   }
 
   nuts_file_present <- length(
     list.files(cfg$dirs$nsimeta, pattern = "_(nuts([123])t0_nuts\\2t1_conc|laut0_laut1_conc)")
   ) > 0
   if (nuts_file_present && "BR" %in% conc_datasets) {
-    message("Running class harmonization for nuts.")
+    if (verbose) message("Running class harmonization for nuts.")
     nuts_levels <- c("nuts3", "nuts2", "nuts1", "lau")
     found <- nuts_levels[nuts_levels %in% unique(cfg$nsi$NSI_MD_conc$MD_varname)]
     if (length(found) == 1) {
-      .harmonize_class(cfg, found, "BR")
+      .harmonize_class(cfg, found, "BR", verbose)
     } else {
       warning("Can't do nuts harmonization: expected exactly one of ",
               paste(nuts_levels, collapse = "/"), " mapped for BR, found ",
@@ -63,14 +64,14 @@ mdi_harmonize_class_vars <- function(cfg) {
     }
   }
 
-  message("==> All class harmonization complete.")
+  if (verbose) message("==> All class harmonization complete.")
   invisible(NULL)
 }
 
 # One code's over-time harmonization: reads the country's year-on-year
 # concordance, rewrites the dataset's RDS, exports the code table.
-.harmonize_class <- function(cfg, code_name, dataset_name) {
-  message("Harmonize class: ", code_name)
+.harmonize_class <- function(cfg, code_name, dataset_name, verbose = FALSE) {
+  if (verbose) message("Harmonize class: ", code_name)
   tmpsave <- cfg$dirs$tmpsave
 
   file_name <- paste0(cfg$dirs$nsimeta, cfg$country, "_", code_name, "t0_", code_name, "t1_conc.csv")
@@ -108,5 +109,5 @@ mdi_harmonize_class_vars <- function(cfg) {
   )
 
   saveRDS(out$data, file = paste0(tmpsave, dataset_name, ".RDS"))
-  message("Class harmonization ", code_name, " complete.")
+  if (verbose) message("Class harmonization ", code_name, " complete.")
 }

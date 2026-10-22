@@ -12,6 +12,13 @@ make_report_cfg <- function() {
        nsi = list(NSI_MD_conc = data.table::data.table(MD_dataset = "SBS", MD_varname = c("firmid", "emp"))))
 }
 
+test_that("mdi_post_harmonization_checks says where the report is only with verbose = TRUE", {
+  cfg <- make_report_cfg()
+  expect_no_message(capture.output(mdi_post_harmonization_checks(cfg)))
+  expect_message(capture.output(mdi_post_harmonization_checks(cfg, verbose = TRUE)),
+                 "POST-HARMONIZATION CHECK COMPLETE")
+})
+
 test_that("mdi_post_harmonization_checks writes the report, flagging what's wrong", {
   cfg <- make_report_cfg()
   capture.output(res <- mdi_post_harmonization_checks(cfg))
