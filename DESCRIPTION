@@ -32,7 +32,11 @@ Description: Harmonizes confidential firm-level microdata held at national
     harmonized data report duplicate keys, type conversion losses, breaks in
     yearly statistics and jumps in missing values, and outputs pass
     statistical disclosure control before they leave the institute. Builds
-    on the analysis tools in 'mditools'.
+    on the analysis tools in 'mditools'. Capital stocks via the perpetual
+    inventory method follow OECD (2009) <doi:10.1787/9789264068476-en>;
+    disclosure control applies the minimum-frequency and dominance rules
+    with secondary suppression described in Hundepool et al. (2012)
+    <doi:10.1002/9781118348239>.
 Encoding: UTF-8
 Imports:
   data.table,
@@ -56,4 +60,4 @@ Suggests:
   testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0
