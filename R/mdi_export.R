@@ -55,22 +55,31 @@
 #' @return Writes files to disk; returns `NULL` invisibly.
 #'
 #' @examples
-#' \dontrun{
+#' # sums of employment per industry, with their dominance shares and
+#' # observation counts
+#' emp_by_nace <- data.table::data.table(nace = c("A", "B"), sum_emp = c(100, 5),
+#'                                       domPerc_emp = c(0.5, 0.5), NumObs = c(10L, 2L))
+#' data.table::setattr(emp_by_nace, "sumvars", "emp")
+#' data.table::setkeyv(emp_by_nace, "nace")
+#' out_dir <- paste0(tempfile("mdi_export_"), "/")
+#' dir.create(out_dir)
 #' mdi_export(
-#'   DT          = my_agg_table,
-#'   format      = "csv",
-#'   output_name = "Coverage_Firms",
-#'   datasets_used = c("BR", "SBS"),
-#'   purpose     = "Number of firms by industry and year.",
-#'   share_0_1   = "None",
-#'   zeroes      = "None",
-#'   selection   = "Full sample",
-#'   export_type = "sum_stat",
-#'   CountryCode = "NL",
-#'   res_group   = "RDC1",
-#'   dirOUTPUT   = "/output/NL/"
+#'   DT            = emp_by_nace,
+#'   format        = "csv",
+#'   output_name   = "Employment_by_industry",
+#'   datasets_used = "SBS",
+#'   purpose       = "Employment by industry.",
+#'   share_0_1     = "None",
+#'   zeroes        = "None",
+#'   selection     = "Full sample",
+#'   export_type   = "sum_stat",
+#'   CountryCode   = "XX",
+#'   res_group     = "ABCD",
+#'   dirOUTPUT     = out_dir
 #' )
-#' }
+#' # industry B has fewer than minNumObs = 5 observations: its sum is masked
+#' data.table::fread(paste0(out_dir, "XX_ABCD_Employment_by_industry.csv"))
+#' readLines(paste0(out_dir, "OutputDescription.csv"))
 #'
 #' @export
 

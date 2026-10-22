@@ -116,21 +116,33 @@ column is skipped, with one warning naming it. A message reports, per
 variable, how many source units used each candidate.
 }
 \examples{
-\dontrun{
-# conctab must be a data.table mapping plantid -> firmid with a year column
-ener_firm <- mdi_key_id_switch(DT = ener_dt, conctab = plant_firm_conc,
-                               md_varnames = MD_varnames[MD_dataset == "ENER"],
-                               method = "agg",
-                               obj_id_type = "to_firmid",
-                               key_id = "plantid")
+# how each variable is aggregated and disaggregated, as in MD_varnames
+md_varnames <- data.table::data.table(
+  MD_dataset = "SBS",
+  MD_varname = c("plantid", "firmid", "year", "emp", "sales"),
+  is_key = c(1, 1, 1, 0, 0),
+  aggregation_method = c(NA, NA, NA, "sum", "sum"),
+  disaggregation_method = c(NA, NA, NA, "replicate",
+                            "weighted_alloc:BR.persons_br|equal")
+)
+# which plants belong to which firm, per year
+plant_firm <- data.table::data.table(plantid = c("P1", "P2", "P3"),
+                                     firmid = c("F1", "F1", "F2"), year = 2020)
 
-# firm-level BS split to plants, weighted as MD_varnames' chains say
-bs_plant <- mdi_key_id_switch(DT = bs_dt, conctab = plant_firm_conc,
-                              md_varnames = MD_varnames[MD_dataset == "BS"],
-                              method = "disagg",
-                              obj_id_type = "to_plantid",
-                              key_id = "firmid",
-                              weight_data = list(SBS = sbs, BR = br, PRODCOM = prodcom))
-}
+# plants to firms: F1 sums P1 and P2
+plants <- data.table::data.table(plantid = c("P1", "P2", "P3"), year = 2020,
+                                 emp = c(10, 30, 5), sales = c(100, 300, 50))
+mdi_key_id_switch(DT = plants, conctab = plant_firm, md_varnames = md_varnames,
+                  method = "agg", obj_id_type = "to_firmid", key_id = "plantid")
+
+# firms to plants: F1's sales split by its plants' employment in BR, emp
+# copied to each plant
+firms <- data.table::data.table(firmid = c("F1", "F2"), year = 2020,
+                                emp = c(40, 5), sales = c(400, 50))
+br <- data.table::data.table(plantid = c("P1", "P2", "P3"), year = 2020,
+                             persons_br = c(10, 30, 5))
+mdi_key_id_switch(DT = firms, conctab = plant_firm, md_varnames = md_varnames,
+                  method = "disagg", obj_id_type = "to_plantid", key_id = "firmid",
+                  weight_data = list(BR = br))
 
 }
